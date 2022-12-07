@@ -136,7 +136,7 @@ export async function mintTokenToSourceChain(
       .crossChainDelist(
         "Binance",
         destContract.address,
-        2,
+        1,
         {
           value: BigInt(isTestnet ? gasFee : 3000000)
         },
@@ -198,6 +198,7 @@ export async function mintTokenToSourceChain(
       .crossChainList(
         "Binance",
         destContract.address,
+        destNFT.address,
         2,
         ethers.utils.parseUnits('0.1', 6),
         deadline,

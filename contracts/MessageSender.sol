@@ -52,6 +52,7 @@ contract MessageSender {
     function crossChainList(
         string calldata destinationChain,
         string calldata destinationAddress,
+        address nftAddress,
         uint256 tokenId,
         uint256 amount,
         uint256 deadline
@@ -61,7 +62,7 @@ contract MessageSender {
         // axelar rugi in this case
 
         // list action = 1
-        bytes memory payload = abi.encode(msg.sender, address(0x0), 1, tokenId, amount, deadline);
+        bytes memory payload = abi.encode(msg.sender, nftAddress, 1, tokenId, amount, deadline);
 
         if (msg.value > 0) {
             gasReceiver.payNativeGasForContractCall{value: msg.value}(

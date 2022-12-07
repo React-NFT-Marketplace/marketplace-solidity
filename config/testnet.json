@@ -1,24 +1,5 @@
 [
   {
-    "name": "Avalanche",
-    "chainId": 43113,
-    "rpc": "https://avalanchetestapi.terminet.io/ext/bc/C/rpc",
-    "gateway": "0xC249632c2D40b9001FE907806902f63038B737Ab",
-    "gasReceiver": "0xbE406F0189A0B4cf3A05C286473D23791Dd44Cc6",
-    "tokenName": "Avax",
-    "tokenSymbol": "AVAX",
-    "executableSample": "0x9372350Abb3B5c10DB1BB858e0bCf91eFa74d946",
-    "constAddressDeployer": "0x98b2920d53612483f91f12ed7754e51b4a77919e",
-    "crossChainToken": "0x57F1c63497AEe0bE305B8852b354CEc793da43bB",
-    "tokens": {
-      "aUSDC": "aUSDC"
-    },
-    "messageSender": "0xdBDDe2eA927Facc22758D3d8320181BCfEca0875",
-    "messageReceiver": "0x234b9e9156052464516583b262d3ba0539E77a79",
-    "nftMarketplace": "0xc14B3c50C358a1B9b9393abC188369B78403C7c5",
-    "oneNFT": "0x625c86a0EA1bEC447B4fd278F8F9AE47d356d53e"
-  },
-  {
     "name": "BscTest",
     "chainId": 97,
     "gateway": "0x4D147dCb984e6affEEC47e44293DA442580A3Ec0",
@@ -32,9 +13,28 @@
     "tokens": {
       "aUSDC": "aUSDC"
     },
-    "messageSender": "0xE2f1ac571fa19c2e504fa45531Fd1F945DE5DC05",
-    "messageReceiver": "0x5af5caeceD293bDB34A0af1ec2D669d6e0f71f97",
-    "nftMarketplace": "0xcD4631f67D5dcB8a5AB941a54f41E7401811B140",
-    "oneNFT": "0x4a132fcfceE250A23d1AC22938f7c84F46bD09e8"
+    "messageSender": "0xD31F23025d9349bDF5b3b1D354ec934334a58f65",
+    "messageReceiver": "0xbf8F911C287E70784c1A80D3bFa047D1036D4d3f",
+    "nftMarketplace": "0xcFa0c704F650d696A18ED404f24e236ad4B8eE9b",
+    "oneNFT": "0x0bD341f2783e3D2fDfaf9C46D45f0de57FEAeF39"
+  },
+  {
+    "name": "Avalanche",
+    "chainId": 43113,
+    "rpc": "https://avalanchetestapi.terminet.io/ext/bc/C/rpc",
+    "gateway": "0xC249632c2D40b9001FE907806902f63038B737Ab",
+    "gasReceiver": "0xbE406F0189A0B4cf3A05C286473D23791Dd44Cc6",
+    "tokenName": "Avax",
+    "tokenSymbol": "AVAX",
+    "executableSample": "0x9372350Abb3B5c10DB1BB858e0bCf91eFa74d946",
+    "constAddressDeployer": "0x98b2920d53612483f91f12ed7754e51b4a77919e",
+    "crossChainToken": "0x57F1c63497AEe0bE305B8852b354CEc793da43bB",
+    "tokens": {
+      "aUSDC": "aUSDC"
+    },
+    "messageSender": "0x6E6057c005Fa7379Fb8907c1c0509Ef5E2ACc6Ad",
+    "messageReceiver": "0xc1a91705Cd4B6e9985e9875c7c1d75B45C89BB53",
+    "nftMarketplace": "0xccD1a7454D044601Fb0C193576A10C5e25651b23",
+    "oneNFT": "0x4454140E52Aa1F3E47b188cA0d96440020717BDb"
   }
 ]
