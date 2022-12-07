@@ -8,6 +8,13 @@
 // NFTMarketplace
 module.exports = [
     5,
-    "0xbf8F911C287E70784c1A80D3bFa047D1036D4d3f",
+    "0x582E2237E43258368c44Bd387705b89583ac4837",
     "0xc2fA98faB811B785b81c64Ac875b31CC9E40F9D2"
 ];
+
+// OneNFT string memory name_, string memory symbol_, address _proxyRegistryAddress
+// module.exports = [
+//     "bscNFT",
+//     "bNFT",
+//     "0x6E6057c005Fa7379Fb8907c1c0509Ef5E2ACc6Ad"
+// ];

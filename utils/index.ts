@@ -223,8 +223,7 @@ export async function mintTokenToSourceChain(
   }
 
 export async function sendTokenToDestChain(
-  amount: string,
-  recipientAddresses: string[],
+  itemId: number,
   onSent: (txhash: string) => void,
 ) {
   // Get token address from the gateway contract
@@ -236,9 +235,16 @@ export async function sendTokenToDestChain(
     avalancheConnectedWallet,
   );
 
+  console.log(`itemId: ${itemId}`);
   // Approve the token for the amount to be sent
+  const amount = await destMarketplace.getTotalPrice(itemId);
+
+//   console.log(amount);
+//   console.log(ethers.BigNumber.from('105000'));
+
   await erc20
-    .approve(sourceContract.address, ethers.utils.parseUnits(amount, 6))
+    // .approve(sourceContract.address, ethers.utils.parseUnits(amount, 6))
+    .approve(sourceContract.address, amount)
     .then((tx: any) => tx.wait());
 
   const api = new AxelarQueryAPI({ environment: Environment.TESTNET });
@@ -252,13 +258,12 @@ export async function sendTokenToDestChain(
     2
   );
 
-  console.log(`amount: ${ethers.utils.parseUnits(amount, 6)}`);
   const receipt = await sourceContract
     .crossChainBuy(
       "Binance",
       destContract.address,
       "aUSDC",
-      ethers.utils.parseUnits(amount, 6),
+      amount,
       1,
       {
         value: BigInt(isTestnet ? gasFee : 3000000)

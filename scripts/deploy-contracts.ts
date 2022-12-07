@@ -63,10 +63,10 @@ async function deploy(chain: any, tokenUrl: string, nftName: any) {
     chain.nftMarketplace = marketplace.address;
 
     const oneNFT = await deployContract(connectedWallet, OneNFTContract, [
-        nftName.name, nftName.symbol
+        nftName.name, nftName.symbol, receiver.address
     ],);
 
-    console.log(`oneNFTContract deployed on ${
+    console.log(`OneNFTContract deployed on ${
         chain.name
     }:`, oneNFT.address,);
     chain.oneNFT = oneNFT.address;
@@ -76,11 +76,14 @@ async function deploy(chain: any, tokenUrl: string, nftName: any) {
     // create token 2
     await(await oneNFT.mint(tokenUrl)).wait(1);
 
+    console.log(`Minted 2 nfts on ${chain.name}`);
+
     let currentTime = new Date();
     currentTime.setDate(currentTime.getDate()+14);
     const newTime = Math.round(currentTime.getTime() / 1000);
 
     await(await oneNFT.approve(marketplace.address, 1)).wait(1);
+    console.log(`Approved nft#1 on ${chain.name}`);
 
     await(await marketplace.makeItem(oneNFT.address, 1, ethers.utils.parseUnits('0.1', 6), newTime)).wait(1);
     console.log(`Listed nft in ${

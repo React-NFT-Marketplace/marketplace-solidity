@@ -4,12 +4,13 @@ pragma solidity 0.8.9;
 import {IERC20} from "@axelar-network/axelar-gmp-sdk-solidity/contracts/interfaces/IERC20.sol";
 import {IAxelarGasService} from "@axelar-network/axelar-gmp-sdk-solidity/contracts/interfaces/IAxelarGasService.sol";
 import {AxelarExecutable} from "@axelar-network/axelar-gmp-sdk-solidity/contracts/executables/AxelarExecutable.sol";
-import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
+// import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
+import "./ERC721Tradable.sol";
 
 //The structure to store info about a listed token
 struct Item {
     uint itemId;
-    IERC721 nft;
+    address nft;
     uint tokenId;
     uint price;
     address payable seller;
@@ -23,7 +24,7 @@ contract NFTMarketplaceV2{
     // empty because we're not concerned with internal details
     function getListedItem(uint256 _itemId) public view returns (Item memory) {}
     function getOwner() public view returns (address) {}
-    function crossMakeItem(IERC721 _nft, uint _tokenId, uint _price, uint _expiryOn, address _seller) external {}
+    function crossMakeItem(address _nft, uint _tokenId, uint _price, uint _expiryOn, address _seller) external {}
     function crossPurchaseItem(uint _itemId, address _buyer) external {}
     function crossDelistItem(uint _itemId, address _seller) external {}
     function getTotalPrice(uint _itemId) view public returns (uint){}
@@ -80,8 +81,7 @@ contract MessageReceiver is AxelarExecutable {
         // actionCall 0 = delist
         if (actionCall == 1) {
             // list
-            IERC721 targetNft = IERC721(nftAddress);
-            nftMarket.crossMakeItem(targetNft, listTokenId, listPrice, deadline, nftOwner);
+            nftMarket.crossMakeItem(nftAddress, listTokenId, listPrice, deadline, nftOwner);
         } else if (actionCall == 0) {
             // delist
             nftMarket.crossDelistItem(listTokenId, nftOwner);
@@ -125,7 +125,7 @@ contract MessageReceiver is AxelarExecutable {
             axlToken.transfer(recipient, amount);
             emit Failed("Nft price and payment not tally");
 
-        } else if (targetItem.expiryOn <= block.timestamp || !targetItem.sold) {
+        } else if (targetItem.expiryOn <= block.timestamp || targetItem.sold) {
             // stop purchasing off list nft (refund aUsdc)
             axlToken.transfer(recipient, amount);
             emit Failed("Nft is not on sale");

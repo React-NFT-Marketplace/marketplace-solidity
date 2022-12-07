@@ -1,19 +1,16 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.4;
 
-import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
+pragma solidity ^0.8.0;
 
-contract OneNFT is ERC721URIStorage {
-    uint public tokenCount;
+import "./ERC721Tradable.sol";
 
-    constructor(string memory name_, string memory symbol_)
-        ERC721(name_, symbol_)
-    {}
+contract OneNFT is ERC721Tradable {
 
-    function mint(string memory _tokenURI) external returns(uint) {
-        tokenCount ++;
-        _safeMint(msg.sender, tokenCount);
-        _setTokenURI(tokenCount, _tokenURI);
-        return(tokenCount);
+    constructor(string memory name_, string memory symbol_, address _proxyRegistryAddress) ERC721Tradable(name_, symbol_, _proxyRegistryAddress) {  }
+
+    function baseTokenURI() override public pure returns (string memory) {
+    }
+
+    function contractURI() public pure returns (string memory) {
     }
 }

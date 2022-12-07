@@ -29,7 +29,7 @@ contract NFTMarketplaceV2 is ReentrancyGuard {
 
     struct Item {
         uint itemId;
-        IERC721 nft;
+        address nft;
         uint tokenId;
         uint price;
         address payable seller;
@@ -99,14 +99,16 @@ contract NFTMarketplaceV2 is ReentrancyGuard {
     }
 
     // shared function for cross chain and same chain call
-    function _makeItem(IERC721 _nft, uint _tokenId, uint _price, uint _expiryOn, address _seller) private {
-        require(_nft.ownerOf(_tokenId) == _seller, 'Only nft owner can access this function');
+    function _makeItem(address _nft, uint _tokenId, uint _price, uint _expiryOn, address _seller) private {
+        IERC721 targetNFT = IERC721(_nft);
+
+        require(targetNFT.ownerOf(_tokenId) == _seller, 'Only nft owner can access this function');
         require(_price > 0, "Price must be greater than zero");
         require(_expiryOn > block.timestamp, "Invalid expiry time");
         // increment itemCount
         itemCount ++;
         // transfer nft
-        _nft.transferFrom(_seller, address(this), _tokenId);
+        targetNFT.transferFrom(_seller, address(this), _tokenId);
         // add new item to items mapping
         items[itemCount] = Item (
             itemCount,
@@ -120,7 +122,7 @@ contract NFTMarketplaceV2 is ReentrancyGuard {
         // emit Offered event
         emit Offered(
             itemCount,
-            address(_nft),
+            _nft,
             _tokenId,
             _price,
             _seller,
@@ -129,12 +131,12 @@ contract NFTMarketplaceV2 is ReentrancyGuard {
     }
 
     // Make item to offer on the marketplace
-    function makeItem(IERC721 _nft, uint _tokenId, uint _price, uint _expiryOn) external nonReentrant {
+    function makeItem(address _nft, uint _tokenId, uint _price, uint _expiryOn) external {
         _makeItem(_nft, _tokenId, _price, _expiryOn, msg.sender);
     }
 
     // Cross Chain Make item to offer on the marketplace
-    function crossMakeItem(IERC721 _nft, uint _tokenId, uint _price, uint _expiryOn, address _seller) external {
+    function crossMakeItem(address _nft, uint _tokenId, uint _price, uint _expiryOn, address _seller) external {
         require(msg.sender == operator, "Only operator can access this function");
        _makeItem(_nft, _tokenId, _price, _expiryOn, _seller);
     }
@@ -171,12 +173,13 @@ contract NFTMarketplaceV2 is ReentrancyGuard {
         item.sold = true;
 
         // transfer nft to buyer
-        item.nft.transferFrom(address(this), msg.sender, item.tokenId);
+        IERC721 targetNFT = IERC721(item.nft);
+        targetNFT.transferFrom(address(this), msg.sender, item.tokenId);
 
         // emit Bought event
         emit Bought(
             _itemId,
-            address(item.nft),
+            item.nft,
             item.tokenId,
             item.price,
             item.seller,
@@ -191,12 +194,13 @@ contract NFTMarketplaceV2 is ReentrancyGuard {
         Item storage item = items[_itemId];
 
         // transfer nft to buyer
-        item.nft.transferFrom(address(this), _buyer, item.tokenId);
+        IERC721 targetNFT = IERC721(item.nft);
+        targetNFT.transferFrom(address(this), _buyer, item.tokenId);
 
         // emit Bought event
         emit Bought(
             _itemId,
-            address(item.nft),
+            item.nft,
             item.tokenId,
             item.price,
             item.seller,
@@ -209,6 +213,10 @@ contract NFTMarketplaceV2 is ReentrancyGuard {
         Item storage item = items[_itemId];
         require(item.seller == _seller, "Only nft owner can access this function");
         item.expiryOn = block.timestamp;
+
+        //approve the marketplace to sell NFTs on your behalf
+        IERC721 targetNFT = IERC721(item.nft);
+        targetNFT.transferFrom(address(this), item.seller, item.tokenId);
 
         emit Delist(
             _itemId,

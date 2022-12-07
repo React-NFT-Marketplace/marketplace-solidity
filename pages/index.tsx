@@ -25,9 +25,9 @@ const Home: NextPage = () => {
     e.preventDefault();
 
     const formData = new FormData(e.currentTarget);
-    const amount = formData.get("amount") as string;
+    const itemId = formData.get("itemId") as unknown as number;
     setLoading(true);
-    await sendTokenToDestChain(amount, recipientAddresses, setTxhash).finally(
+    await sendTokenToDestChain(itemId, setTxhash).finally(
       () => {
         setLoading(false);
         handleRefreshSrcBalances();
@@ -128,17 +128,17 @@ const Home: NextPage = () => {
                 >
                   <div>
                     <label className="label">
-                      <span className="label-text">Token amount</span>
+                      <span className="label-text">ItemId To Buy</span>
                     </label>
                     <div className="w-full input-group">
                       <input
                         disabled={loading}
                         required
-                        name="amount"
+                        name="itemId"
                         type="number"
                         min="0.1"
                         step="0.1"
-                        placeholder="Enter amount to send"
+                        placeholder="Enter nft itemId to buy"
                         className="w-full input input-bordered"
                       />
                       <button
@@ -151,7 +151,7 @@ const Home: NextPage = () => {
                         })}
                         type="submit"
                       >
-                        Send
+                        Buy
                       </button>
                     </div>
                   </div>
@@ -166,7 +166,7 @@ const Home: NextPage = () => {
                   )}
 
                   <div className="form-control">
-                    <label className="label">
+                    {/* <label className="label">
                       <span className="label-text">EVM Address</span>
                     </label>
                     <label className="w-full input-group">
@@ -186,7 +186,7 @@ const Home: NextPage = () => {
                       >
                         Add
                       </button>
-                    </label>
+                    </label> */}
 
                     <div className="divider">OR</div>
 
