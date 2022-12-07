@@ -4,36 +4,38 @@ pragma solidity 0.8.9;
 import {IERC20} from "@axelar-network/axelar-gmp-sdk-solidity/contracts/interfaces/IERC20.sol";
 import {IAxelarGasService} from "@axelar-network/axelar-gmp-sdk-solidity/contracts/interfaces/IAxelarGasService.sol";
 import {AxelarExecutable} from "@axelar-network/axelar-gmp-sdk-solidity/contracts/executables/AxelarExecutable.sol";
+import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 
 //The structure to store info about a listed token
-struct ListedToken {
-    uint256 tokenId;
-    address payable owner;
+struct Item {
+    uint itemId;
+    IERC721 nft;
+    uint tokenId;
+    uint price;
     address payable seller;
-    uint256 price;
-    bool currentlyListed;
-    string tokenURI;
+    uint expiryOn;
+    bool sold;
 }
 
 // https://ethereum.stackexchange.com/questions/24713/how-can-a-deployed-contract-call-another-deployed-contract-by-interface-and-ad
 // describe the interface
-contract NFTMarketplace{
+contract NFTMarketplaceV2{
     // empty because we're not concerned with internal details
-    function getListPrice() public view returns (uint256) {}
-    function createToken(string memory tokenURI) public payable returns (uint) {}
-    function getListedTokenForId(uint256 tokenId) public view returns (ListedToken memory) {}
+    function getListedItem(uint256 _itemId) public view returns (Item memory) {}
+    function crossMakeItem(IERC721 _nft, uint _tokenId, uint _price, uint _expiryOn, address _seller) external {}
     function getOwner() public view returns (address) {}
-    function crossExecuteSale(address recipient, uint256 tokenId) public payable {}
-    function crossCreateToken(address recipient, string memory tokenURI) public payable {}
-    function crossSetListToken(address recipient, uint256 tokenId, uint256 price, uint deadline, bytes memory signature) public {}
-    function crossDelistToken(address recipient, uint256 tokenId) public {}
+    function crossMakeItem(IERC721 _nft, uint _tokenId, uint _price, uint _expiryOn, address _seller) external {}
+    function crossPurchaseItem(uint _itemId, address _buyer) external {}
+    function crossDelistItem(uint _itemId, address _seller) external {}
+    function getTotalPrice(uint _itemId) view public returns (uint){}
+    function getItemCount() public view returns (uint) {}
 }
 
 contract MessageReceiver is AxelarExecutable {
     IAxelarGasService immutable gasReceiver;
     //owner is the contract address that created the smart contract
     address owner;
-    NFTMarketplace nftMarket;
+    NFTMarketplaceV2 nftMarket;
     string public sourceChain;
 
     constructor(address _gateway, address _gasReceiver)
@@ -53,7 +55,7 @@ contract MessageReceiver is AxelarExecutable {
 
     function setMarketplace(address _nftMarket) public {
         require(owner == msg.sender, "Only owner can set marketplace");
-        nftMarket = NFTMarketplace(_nftMarket);
+        nftMarket = NFTMarketplaceV2(_nftMarket);
     }
 
     event Executed();
@@ -67,27 +69,23 @@ contract MessageReceiver is AxelarExecutable {
     ) internal override {
         sourceChain = sourceChain_;
         (
-            address recipient,
+            address owner,
+            address nftAddress,
             uint256 actionCall,
-            string memory tokenUrl,
             uint256 listTokenId,
             uint256 listPrice,
             uint256 deadline,
-            bytes memory signature
-        ) = abi.decode(payload, (address, uint256, string, uint256, uint256, uint256, bytes));
+        ) = abi.decode(payload, (address, uint256, uint256, uint256, uint256));
 
-        // actionCall 2 = mint
         // actionCall 1 = list
         // actionCall 0 = delist
-        if (actionCall == 2) {
-            // mint
-            nftMarket.crossCreateToken(recipient, tokenUrl);
-        } else if (actionCall == 1) {
+        if (actionCall == 1) {
             // list
-            nftMarket.crossSetListToken(recipient, listTokenId, listPrice, deadline, signature);
-        } else {
+            IERC721 targetNft = IERC721(nftAddress);
+            nftMarket.crossMakeItem(nftAddress, listTokenId, listPrice, deadline, owner);
+        } else if (actionCall == 0) {
             // delist
-            nftMarket.crossDelistToken(recipient, listTokenId);
+            nftMarket.crossDelistItem(listTokenId, owner);
         }
         emit Executed();
     }
@@ -102,7 +100,7 @@ contract MessageReceiver is AxelarExecutable {
         // decode payload
         (
             address recipient,
-            uint256 tokenId
+            uint256 itemId
         ) = abi.decode(payload, (address, uint256));
         address tokenAddress = gateway.tokenAddresses(tokenSymbol);
 
@@ -115,36 +113,43 @@ contract MessageReceiver is AxelarExecutable {
         // axlToken.transfer(address(nftMarket), amount);
 
         // get seller and owner info from listedInfo
-        ListedToken memory targetToken = nftMarket.getListedTokenForId(tokenId);
+        Item memory targetItem = nftMarket.getListedItem(itemId);
         IERC20 axlToken = IERC20(tokenAddress);
+        uint _totalPrice = nftMarket.getTotalPrice(itemId);
+        // user allowance
+        uint256 userAllowance = axlToken.allowance(address(this), address(nftMarket));
+        // valid itemCount
+        uint itemCount = nftMarket.getItemCount();
 
-        if (amount != targetToken.price) {
-            // if sent amount is not tally with nft price, deposit to user wallet
+        if (amount != _totalPrice) {
+            // if sent amount is not tally with nft price, refund deposit to user wallet
             axlToken.transfer(recipient, amount);
             emit Failed("Nft price and payment not tally");
 
-        } else if (targetToken.currentlyListed != true) {
-            // stop purchasing off list nft
+        } else if (targetItem.expiryOn <= block.timestamp || !targetItem.sold) {
+            // stop purchasing off list nft (refund aUsdc)
             axlToken.transfer(recipient, amount);
             emit Failed("Nft is not on sale");
 
+        } else if (userAllowance <= 0) {
+            axlToken.transfer(recipient, amount);
+            emit Failed("Allowance <= 0");
+
+        } else if (!(itemId > 0 && itemId <= itemCount)) {
+            axlToken.transfer(recipient, amount);
+            emit Failed("Invalid itemId");
+
         } else {
             //Transfer the proceeds from the sale to the seller of the NFT
-            uint listPrice = nftMarket.getListPrice();
             address marketplaceOwner = nftMarket.getOwner();
-            uint sellerPayment = targetToken.price - listPrice;
 
-            axlToken.transfer(targetToken.seller, sellerPayment);
+            axlToken.transfer(targetItem.seller, targetItem.price);
 
             //Transfer the listing fee to the marketplace creator
-            axlToken.transfer(marketplaceOwner, listPrice);
+            axlToken.transfer(marketplaceOwner, _totalPrice - targetItem.price);
 
             // execute transfer nft call
-            nftMarket.crossExecuteSale(recipient, tokenId);
-
-            // cannot manually emit like this
-            // emit Transfer(address(this), address(targetToken.seller), sellerPayment);
-            // emit Transfer(address(this), address(marketplaceOwner), listPrice);
+            nftMarket.crossPurchaseItem(itemId, recipient);
         }
 
         emit Executed();
