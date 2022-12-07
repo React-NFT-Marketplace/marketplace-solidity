@@ -9,7 +9,8 @@ import {
 import AxelarGatewayContract from "../artifacts/@axelar-network/axelar-gmp-sdk-solidity/contracts/interfaces/IAxelarGateway.sol/IAxelarGateway.json";
 import MessageSenderContract from "../artifacts/contracts/MessageSender.sol/MessageSender.json";
 import MessageReceiverContract from "../artifacts/contracts/MessageReceiver.sol/MessageReceiver.json";
-import NFTMarketplace from "../artifacts/contracts/NFTMarketplace.sol/NFTMarketplace.json";
+import NFTMarketplace from "../artifacts/contracts/NFTMarketplaceV2.sol/NFTMarketplaceV2.json";
+import OneNFT from "../artifacts/contracts/OneNFT.sol/OneNFT.json";
 import IERC20 from "../artifacts/@axelar-network/axelar-gmp-sdk-solidity/contracts/interfaces/IERC20.sol/IERC20.json";
 import { isTestnet, wallet } from "../config/constants";
 import { TypedDataDomain } from "@ethersproject/abstract-signer";
@@ -64,9 +65,27 @@ const destContract = new Contract(
   bscConnectedWallet,
 );
 
+const sourceMarketplace = new Contract(
+    avalancheChain.nftMarketplace as string,
+    NFTMarketplace.abi,
+    avalancheConnectedWallet,
+);
+
 const destMarketplace = new Contract(
     bscChain.nftMarketplace as string,
     NFTMarketplace.abi,
+    bscConnectedWallet,
+);
+
+const sourceNFT = new Contract(
+    avalancheChain.oneNFT as string,
+    OneNFT.abi,
+    avalancheConnectedWallet,
+);
+
+const destNFT = new Contract(
+    bscChain.oneNFT as string,
+    OneNFT.abi,
     bscConnectedWallet,
 );
 
@@ -74,32 +93,16 @@ export function generateRecipientAddress(): string {
   return ethers.Wallet.createRandom().address;
 }
 
-export async function mintTokenToDestChain(
+export async function mintTokenToSourceChain(
     onSent: (txhash: string) => void,
   ) {
-
-    const api = new AxelarQueryAPI({ environment: Environment.TESTNET });
-
-    // Calculate how much gas to pay to Axelar to execute the transaction at the destination chain
-    const gasFee = await api.estimateGasFee(
-      EvmChain.AVALANCHE,
-      EvmChain.BINANCE,
-      GasToken.AVAX,
-      1000000,
-      2
-    );
-
-    const receipt = await sourceContract
-      .crossChainMint(
-        "Binance",
-        destContract.address,
+    console.log(`trying to mint`);
+    const receipt = await sourceNFT
+      .mint(
         "https://api.npoint.io/efaecf7cee7cfe142516",
-        {
-          value: BigInt(isTestnet ? gasFee : 3000000)
-        },
       )
       .then((tx: any) => tx.wait());
-
+    console.log(receipt);
     console.log({
       txHash: receipt.transactionHash,
     });
@@ -170,36 +173,26 @@ export async function mintTokenToDestChain(
     );
 
     const tokenId = 2;
-    // set deadline in 1 days
-    const deadline = Math.round(Date.now() / 1000 + (7 * 24 * 60 * 60));
+    // set deadline in 14 days
+    const deadline = Math.round(Date.now() / 1000 + (14 * 24 * 60 * 60));
+    const ownerAddress = await bscConnectedWallet.getAddress();
 
-    const contractName = await destMarketplace.name();
-    const nftNonce = await destMarketplace.nonces(tokenId);
-    const signature = await sign(contractName, bscChain.nftMarketplace, bscChain.messageReceiver, tokenId, bscChain.chainId, nftNonce, deadline);
+    console.log(`owner: ${ownerAddress}`);
+    const approved = await destNFT.isApprovedForAll(ownerAddress, bscChain.messageReceiver);
+    console.log(`approved: ${approved}`);
+    if (!approved) {
+        await destNFT
+        .setApprovalForAll(
+            bscChain.messageReceiver,
+            true
+        )
+        .then((tx: any) => tx.wait());
+    }
+    // const signature = await sign(contractName, bscChain.nftMarketplace, bscChain.messageReceiver, tokenId, bscChain.chainId, nftNonce, deadline);
+
     console.log(`spender: ${bscChain.messageReceiver}`);
-    console.log(`nonces: ${nftNonce}`);
-    console.log(`contractName: ${contractName}`);
-    console.log(`signature: ${signature}`);
+    // console.log(`signature: ${signature}`);
     console.log(`deadline: ${deadline}`);
-
-    // const payload = await ethers.utils.defaultAbiCoder.encode(
-    //     ["address", "string", "string", "uint256", "uint256", "uint256", "bytes"],
-    //     [
-    //         "0x801Df8bD5C0C24D9B942a20627CAF1Bd34427804",
-    //         "list",
-    //         "",
-    //         2,
-    //         100000,
-    //         deadline,
-    //         signature
-    //     ]
-    // );
-
-    // console.log(payload);
-
-    // const decoded = await ethers.utils.defaultAbiCoder.decode(["address", "uint256", "string", "uint256", "uint256", "uint256", "bytes"], '0x0000000000000000000000001cc5f2f37a4787f02e18704d252735fb714f35ec000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000e0000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000186a0000000000000000000000000000000000000000000000000000000006370ec1000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004159d912d0c1da7967f0aae7369c305f4d2f99182b7ceabd986f7e0ce703e41e56575cb0d3a840f6713c61f5c66750e1fadcb0a5dc53167ec54c8c4d5d58001fb61b00000000000000000000000000000000000000000000000000000000000000');
-
-    // console.log(decoded);
 
     const receipt = await sourceContract
       .crossChainList(
@@ -208,7 +201,6 @@ export async function mintTokenToDestChain(
         2,
         ethers.utils.parseUnits('0.1', 6),
         deadline,
-        signature,
         {
           value: BigInt(isTestnet ? gasFee : 3000000)
         },

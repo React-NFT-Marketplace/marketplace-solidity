@@ -23,7 +23,6 @@ contract MessageSender {
     function crossChainDelist(
         string calldata destinationChain,
         string calldata destinationAddress,
-        address nftAddress,
         uint256 tokenId
     ) external payable {
         // make sure gateway and gasReceiver payload is the same

@@ -6,7 +6,7 @@ import {
   sendTokenToDestChain,
   listTokenToDestChain,
   delistTokenToDestChain,
-  mintTokenToDestChain,
+  mintTokenToSourceChain,
   getBalance,
   generateRecipientAddress,
   truncatedAddress,
@@ -38,7 +38,7 @@ const Home: NextPage = () => {
 
   async function mintNft() {
     setLoading(true);
-    await mintTokenToDestChain(setTxhash).finally(
+    await mintTokenToSourceChain(setTxhash).finally(
       () => {
         setLoading(false);
       },
@@ -105,7 +105,7 @@ const Home: NextPage = () => {
               style={{ backgroundImage: "url('/assets/avalanche.gif')" }}
             />
             <div className="card-body">
-              <h2 className="card-title">Avalanche (Token Sender)</h2>
+              <h2 className="card-title">Avax (Token Sender)</h2>
 
               <p>
                 Sender ({wallet.address}) balance:{" "}
@@ -189,15 +189,6 @@ const Home: NextPage = () => {
                     </label>
 
                     <div className="divider">OR</div>
-                    <button
-                      onClick={handleOnGenerateRecipientAddress}
-                      type="button"
-                      className={cn("btn btn-accent mt-2", {
-                        loading,
-                      })}
-                    >
-                      Generate Random Address
-                    </button>
 
                     <button
                       onClick={mintNft}
@@ -238,10 +229,10 @@ const Home: NextPage = () => {
           <div className="row-span-1 shadow-xl card w-96 bg-base-100">
             <figure
               className="h-64 bg-center bg-no-repeat bg-cover image-full"
-              style={{ backgroundImage: "url('/assets/moonbeam.gif')" }}
+              style={{ backgroundImage: "url('/assets/bsc.gif')" }}
             />
             <div className="card-body">
-              <h2 className="card-title">Moonbeam (Token Receiver)</h2>
+              <h2 className="card-title">BSC (Token Receiver)</h2>
               <div className="h-40">
                 <div className="w-full max-w-xs form-control">
                   <div>

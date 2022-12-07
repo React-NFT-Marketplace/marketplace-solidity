@@ -99,7 +99,7 @@ contract NFTMarketplaceV2 is ReentrancyGuard {
     }
 
     // shared function for cross chain and same chain call
-    function _makeItem(IERC721 _nft, uint _tokenId, uint _price, uint _expiryOn, address _seller) private nonReentrant {
+    function _makeItem(IERC721 _nft, uint _tokenId, uint _price, uint _expiryOn, address _seller) private {
         require(_nft.ownerOf(_tokenId) == _seller, 'Only nft owner can access this function');
         require(_price > 0, "Price must be greater than zero");
         require(_expiryOn > block.timestamp, "Invalid expiry time");
@@ -205,7 +205,7 @@ contract NFTMarketplaceV2 is ReentrancyGuard {
     }
 
     // shared function to delist item using offer expiry time (cross chain / same chain)
-    function _delistItem(uint _itemId, address _seller) private nonReentrant {
+    function _delistItem(uint _itemId, address _seller) private {
         Item storage item = items[_itemId];
         require(item.seller == _seller, "Only nft owner can access this function");
         item.expiryOn = block.timestamp;

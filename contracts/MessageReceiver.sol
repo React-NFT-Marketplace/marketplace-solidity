@@ -22,7 +22,6 @@ struct Item {
 contract NFTMarketplaceV2{
     // empty because we're not concerned with internal details
     function getListedItem(uint256 _itemId) public view returns (Item memory) {}
-    function crossMakeItem(IERC721 _nft, uint _tokenId, uint _price, uint _expiryOn, address _seller) external {}
     function getOwner() public view returns (address) {}
     function crossMakeItem(IERC721 _nft, uint _tokenId, uint _price, uint _expiryOn, address _seller) external {}
     function crossPurchaseItem(uint _itemId, address _buyer) external {}
@@ -69,23 +68,23 @@ contract MessageReceiver is AxelarExecutable {
     ) internal override {
         sourceChain = sourceChain_;
         (
-            address owner,
+            address nftOwner,
             address nftAddress,
             uint256 actionCall,
             uint256 listTokenId,
             uint256 listPrice,
-            uint256 deadline,
-        ) = abi.decode(payload, (address, uint256, uint256, uint256, uint256));
+            uint256 deadline
+        ) = abi.decode(payload, (address, address, uint256, uint256, uint256, uint256));
 
         // actionCall 1 = list
         // actionCall 0 = delist
         if (actionCall == 1) {
             // list
             IERC721 targetNft = IERC721(nftAddress);
-            nftMarket.crossMakeItem(nftAddress, listTokenId, listPrice, deadline, owner);
+            nftMarket.crossMakeItem(targetNft, listTokenId, listPrice, deadline, nftOwner);
         } else if (actionCall == 0) {
             // delist
-            nftMarket.crossDelistItem(listTokenId, owner);
+            nftMarket.crossDelistItem(listTokenId, nftOwner);
         }
         emit Executed();
     }
