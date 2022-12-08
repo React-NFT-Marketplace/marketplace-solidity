@@ -177,18 +177,14 @@ export async function mintTokenToSourceChain(
     const deadline = Math.round(Date.now() / 1000 + (14 * 24 * 60 * 60));
     const ownerAddress = await bscConnectedWallet.getAddress();
 
-    console.log(`owner: ${ownerAddress}`);
-    const approved = await destNFT.isApprovedForAll(ownerAddress, bscChain.messageReceiver);
-    console.log(`approved: ${approved}`);
-    if (!approved) {
-        await destNFT
-        .setApprovalForAll(
-            bscChain.messageReceiver,
-            true
-        )
-        .then((tx: any) => tx.wait());
-    }
-    // const signature = await sign(contractName, bscChain.nftMarketplace, bscChain.messageReceiver, tokenId, bscChain.chainId, nftNonce, deadline);
+    const contractName = await destNFT.name();
+    const nftNonce = await destNFT.nonces(tokenId);
+    const signature = await sign(contractName, bscChain.oneNFT, bscChain.nftMarketplace, tokenId, bscChain.chainId, nftNonce, deadline, bscConnectedWallet);
+
+    // listing timeclear
+    let currentTime = new Date();
+    currentTime.setDate(currentTime.getDate()+14);
+    const newTime = Math.round(currentTime.getTime() / 1000);
 
     console.log(`spender: ${bscChain.messageReceiver}`);
     // console.log(`signature: ${signature}`);
@@ -201,7 +197,9 @@ export async function mintTokenToSourceChain(
         destNFT.address,
         2,
         ethers.utils.parseUnits('0.1', 6),
+        newTime,
         deadline,
+        signature,
         {
           value: BigInt(isTestnet ? gasFee : 3000000)
         },
@@ -310,13 +308,14 @@ export async function getBalance(addresses: string[], isSource: boolean) {
 
 // helper to sign using (spender, tokenId, nonce, deadline) EIP 712
 async function sign(
-    contractName: String,
-    verifyingContract: String,
-    spender: String,
-    tokenId: number,
-    chainId: number,
-    nonce: BigNumber,
-    deadline: number
+    contractName,
+    verifyingContract,
+    spender,
+    tokenId,
+    chainId,
+    nonce,
+    deadline,
+    connectedWallet
   ) {
 
     const typedData = {
@@ -345,13 +344,13 @@ async function sign(
 
     // sign Permit
     // assume deployer is the owner
-    const deployer = bscConnectedWallet;
+    const deployer = connectedWallet;
 
     const signature = await deployer._signTypedData(
-      typedData.domain as TypedDataDomain,
+      typedData.domain,
       { Permit: typedData.types.Permit },
       typedData.message
     );
 
     return signature;
-  }
+}

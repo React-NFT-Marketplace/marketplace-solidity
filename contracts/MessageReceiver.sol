@@ -5,7 +5,6 @@ import {IERC20} from "@axelar-network/axelar-gmp-sdk-solidity/contracts/interfac
 import {IAxelarGasService} from "@axelar-network/axelar-gmp-sdk-solidity/contracts/interfaces/IAxelarGasService.sol";
 import {AxelarExecutable} from "@axelar-network/axelar-gmp-sdk-solidity/contracts/executables/AxelarExecutable.sol";
 // import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
-import "./ERC721Tradable.sol";
 
 //The structure to store info about a listed token
 struct Item {
@@ -20,16 +19,20 @@ struct Item {
 
 // https://ethereum.stackexchange.com/questions/24713/how-can-a-deployed-contract-call-another-deployed-contract-by-interface-and-ad
 // describe the interface
-contract NFTMarketplaceV2{
+interface NFTMarketplaceV2{
     // empty because we're not concerned with internal details
-    function getListedItem(uint256 _itemId) public view returns (Item memory) {}
-    function getOwner() public view returns (address) {}
-    function crossMakeItem(address _nft, uint _tokenId, uint _price, uint _expiryOn, address _seller) external {}
-    function crossPurchaseItem(uint _itemId, address _buyer) external {}
-    function crossDelistItem(uint _itemId, address _seller) external {}
-    function getTotalPrice(uint _itemId) view public returns (uint){}
-    function getItemCount() public view returns (uint) {}
+    function getListedItem(uint256 _itemId) external view returns (Item memory);
+    function getOwner() external view returns (address);
+    function crossMakeItem(address _nft, uint _tokenId, uint _price, uint _expiryOn, address _seller, uint sigExpiry, bytes memory signature) external;
+    function crossPurchaseItem(uint _itemId, address _buyer) external;
+    function crossDelistItem(uint _itemId, address _seller) external;
+    function getTotalPrice(uint _itemId) view external returns (uint);
+    function getItemCount() external view returns (uint);
 }
+
+// interface OneNFT {
+//     function mint(string memory _tokenURI) external returns(uint);
+// }
 
 contract MessageReceiver is AxelarExecutable {
     IAxelarGasService immutable gasReceiver;
@@ -74,14 +77,17 @@ contract MessageReceiver is AxelarExecutable {
             uint256 actionCall,
             uint256 listTokenId,
             uint256 listPrice,
-            uint256 deadline
-        ) = abi.decode(payload, (address, address, uint256, uint256, uint256, uint256));
+            uint256 listExpiry,
+            uint256 sigExpiry,
+            bytes memory signature
+        ) = abi.decode(payload, (address, address, uint256, uint256, uint256, uint256, uint256, bytes));
 
+        // actionCall 2 = mint
         // actionCall 1 = list
         // actionCall 0 = delist
         if (actionCall == 1) {
             // list
-            nftMarket.crossMakeItem(nftAddress, listTokenId, listPrice, deadline, nftOwner);
+            nftMarket.crossMakeItem(nftAddress, listTokenId, listPrice, listExpiry, nftOwner, sigExpiry, signature);
         } else if (actionCall == 0) {
             // delist
             nftMarket.crossDelistItem(listTokenId, nftOwner);
@@ -115,8 +121,7 @@ contract MessageReceiver is AxelarExecutable {
         Item memory targetItem = nftMarket.getListedItem(itemId);
         IERC20 axlToken = IERC20(tokenAddress);
         uint _totalPrice = nftMarket.getTotalPrice(itemId);
-        // user allowance
-        uint256 userAllowance = axlToken.allowance(address(this), address(nftMarket));
+
         // valid itemCount
         uint itemCount = nftMarket.getItemCount();
 
@@ -129,10 +134,6 @@ contract MessageReceiver is AxelarExecutable {
             // stop purchasing off list nft (refund aUsdc)
             axlToken.transfer(recipient, amount);
             emit Failed("Nft is not on sale");
-
-        } else if (userAllowance <= 0) {
-            axlToken.transfer(recipient, amount);
-            emit Failed("Allowance <= 0");
 
         } else if (!(itemId > 0 && itemId <= itemCount)) {
             axlToken.transfer(recipient, amount);

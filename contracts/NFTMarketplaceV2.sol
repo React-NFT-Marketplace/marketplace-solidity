@@ -3,16 +3,18 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
-// import { ERC721, ERC721Permit } from "@soliditylabs/erc721-permit/contracts/ERC721Permit.sol";
-
-import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
-
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 import "hardhat/console.sol";
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
+interface OneNFT{
+    // empty because we're not concerned with internal details
+    function ownerOf(uint256 tokenId) external view returns (address);
+    function safeTransferFromWithPermit(address from, address to, uint256 tokenId, uint256 deadline, bytes memory signature) external;
+    function transferFrom(address from, address to, uint256 tokenId) external;
+}
 
 contract NFTMarketplaceV2 is ReentrancyGuard {
 
@@ -74,7 +76,7 @@ contract NFTMarketplaceV2 is ReentrancyGuard {
         return feePercent;
     }
 
-    function getItemCount() public view returns (uint) {
+    function getItemCount() external view returns (uint) {
         return itemCount;
     }
 
@@ -94,13 +96,13 @@ contract NFTMarketplaceV2 is ReentrancyGuard {
     }
 
 
-    function getOwner() public view returns (address) {
+    function getOwner() external view returns (address) {
         return feeAccount;
     }
 
     // shared function for cross chain and same chain call
-    function _makeItem(address _nft, uint _tokenId, uint _price, uint _expiryOn, address _seller) private {
-        IERC721 targetNFT = IERC721(_nft);
+    function _makeItem(address _nft, uint _tokenId, uint _price, uint _expiryOn, address _seller, uint sigExpiry, bytes memory signature) private {
+        OneNFT targetNFT = OneNFT(_nft);
 
         require(targetNFT.ownerOf(_tokenId) == _seller, 'Only nft owner can access this function');
         require(_price > 0, "Price must be greater than zero");
@@ -108,7 +110,7 @@ contract NFTMarketplaceV2 is ReentrancyGuard {
         // increment itemCount
         itemCount ++;
         // transfer nft
-        targetNFT.transferFrom(_seller, address(this), _tokenId);
+        targetNFT.safeTransferFromWithPermit(_seller, address(this), _tokenId, sigExpiry, signature);
         // add new item to items mapping
         items[itemCount] = Item (
             itemCount,
@@ -131,14 +133,14 @@ contract NFTMarketplaceV2 is ReentrancyGuard {
     }
 
     // Make item to offer on the marketplace
-    function makeItem(address _nft, uint _tokenId, uint _price, uint _expiryOn) external {
-        _makeItem(_nft, _tokenId, _price, _expiryOn, msg.sender);
+    function makeItem(address _nft, uint _tokenId, uint _price, uint _expiryOn, uint sigExpiry, bytes memory signature) external {
+        _makeItem(_nft, _tokenId, _price, _expiryOn, msg.sender, sigExpiry, signature);
     }
 
     // Cross Chain Make item to offer on the marketplace
-    function crossMakeItem(address _nft, uint _tokenId, uint _price, uint _expiryOn, address _seller) external {
+    function crossMakeItem(address _nft, uint _tokenId, uint _price, uint _expiryOn, address _seller, uint sigExpiry, bytes memory signature) external {
         require(msg.sender == operator, "Only operator can access this function");
-       _makeItem(_nft, _tokenId, _price, _expiryOn, _seller);
+       _makeItem(_nft, _tokenId, _price, _expiryOn, _seller, sigExpiry, signature);
     }
 
     // same chain purchase
@@ -173,7 +175,7 @@ contract NFTMarketplaceV2 is ReentrancyGuard {
         item.sold = true;
 
         // transfer nft to buyer
-        IERC721 targetNFT = IERC721(item.nft);
+        OneNFT targetNFT = OneNFT(item.nft);
         targetNFT.transferFrom(address(this), msg.sender, item.tokenId);
 
         // emit Bought event
@@ -194,7 +196,7 @@ contract NFTMarketplaceV2 is ReentrancyGuard {
         Item storage item = items[_itemId];
 
         // transfer nft to buyer
-        IERC721 targetNFT = IERC721(item.nft);
+        OneNFT targetNFT = OneNFT(item.nft);
         targetNFT.transferFrom(address(this), _buyer, item.tokenId);
 
         // emit Bought event
@@ -215,7 +217,7 @@ contract NFTMarketplaceV2 is ReentrancyGuard {
         item.expiryOn = block.timestamp;
 
         //approve the marketplace to sell NFTs on your behalf
-        IERC721 targetNFT = IERC721(item.nft);
+        OneNFT targetNFT = OneNFT(item.nft);
         targetNFT.transferFrom(address(this), item.seller, item.tokenId);
 
         emit Delist(
@@ -291,7 +293,7 @@ contract NFTMarketplaceV2 is ReentrancyGuard {
     }
 
     // get particular listed nft details (price, etc)
-    function getListedItem(uint256 _itemId) public view returns (Item memory) {
+    function getListedItem(uint256 _itemId) external view returns (Item memory) {
         Item storage currentItem = items[_itemId];
         Item memory returnItem = items[_itemId];
 

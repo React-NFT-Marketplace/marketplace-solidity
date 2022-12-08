@@ -1,22 +1,22 @@
 [
   {
-    "name": "BscTest",
-    "chainId": 97,
-    "gateway": "0x4D147dCb984e6affEEC47e44293DA442580A3Ec0",
-    "rpc": "https://data-seed-prebsc-1-s3.binance.org:8545",
+    "name": "Moonbeam",
+    "chainId": 1287,
+    "gateway": "0x5769D84DD62a6fD969856c75c7D321b84d455929",
+    "rpc": "https://moonbase-alpha.public.blastapi.io",
     "gasReceiver": "0xbE406F0189A0B4cf3A05C286473D23791Dd44Cc6",
-    "tokenName": "BNB",
-    "tokenSymbol": "BNB",
-    "executableSample": "0x9372350Abb3B5c10DB1BB858e0bCf91eFa74d946",
+    "tokenName": "DEV",
+    "tokenSymbol": "DEV",
+    "executableSample": "0x2120A291a99746726CFa3bCcd3C388da75f7e718",
     "constAddressDeployer": "0x98b2920d53612483f91f12ed7754e51b4a77919e",
-    "crossChainToken": "0xc2fA98faB811B785b81c64Ac875b31CC9E40F9D2",
+    "crossChainToken": "0xD1633F7Fb3d716643125d6415d4177bC36b7186b",
     "tokens": {
       "aUSDC": "aUSDC"
     },
-    "messageSender": "0xD31F23025d9349bDF5b3b1D354ec934334a58f65",
-    "messageReceiver": "0xbf8F911C287E70784c1A80D3bFa047D1036D4d3f",
-    "nftMarketplace": "0xcFa0c704F650d696A18ED404f24e236ad4B8eE9b",
-    "oneNFT": "0x0bD341f2783e3D2fDfaf9C46D45f0de57FEAeF39"
+    "messageSender": "0x45097d009205C7A78FEDd4DCE8199DaDE3A05232",
+    "messageReceiver": "0xdBf3A9C53034a1a72DE9899E67b2D72280EE8A98",
+    "nftMarketplace": "0x6f6A2fEeC4a2436C44e1956482c824Ca8F1F54C2",
+    "oneNFT": "0x25e565d569BEf9baE30EcC963e38eA3C2407b634"
   },
   {
     "name": "Avalanche",
@@ -32,9 +32,66 @@
     "tokens": {
       "aUSDC": "aUSDC"
     },
-    "messageSender": "0x6E6057c005Fa7379Fb8907c1c0509Ef5E2ACc6Ad",
-    "messageReceiver": "0xc1a91705Cd4B6e9985e9875c7c1d75B45C89BB53",
-    "nftMarketplace": "0xccD1a7454D044601Fb0C193576A10C5e25651b23",
-    "oneNFT": "0x4454140E52Aa1F3E47b188cA0d96440020717BDb"
+    "messageSender": "0xaaf4F44dFc613a7FBb85Acbf8f2808618eDA2d2F",
+    "messageReceiver": "0x3cf516A9288474f18627bAFDD522B2e287e5Fd29",
+    "nftMarketplace": "0x1a44D73613Ecee2349d878dDA96054eD042108f4",
+    "oneNFT": "0xA9eca959A82f1706B745f18cb19a7d003bAEb8F0"
+  },
+  {
+    "name": "BscTest",
+    "chainId": 97,
+    "gateway": "0x4D147dCb984e6affEEC47e44293DA442580A3Ec0",
+    "rpc": "https://data-seed-prebsc-1-s3.binance.org:8545",
+    "gasReceiver": "0xbE406F0189A0B4cf3A05C286473D23791Dd44Cc6",
+    "tokenName": "BNB",
+    "tokenSymbol": "BNB",
+    "executableSample": "0x9372350Abb3B5c10DB1BB858e0bCf91eFa74d946",
+    "constAddressDeployer": "0x98b2920d53612483f91f12ed7754e51b4a77919e",
+    "crossChainToken": "0xc2fA98faB811B785b81c64Ac875b31CC9E40F9D2",
+    "tokens": {
+      "aUSDC": "aUSDC"
+    },
+    "messageSender": "0x408fa00F06dABA71460293129685e23c1ad10d9a",
+    "messageReceiver": "0x21A239A582db083EcaD919f219F56F02DAf3eb77",
+    "nftMarketplace": "0xA9f82115f3Eb1674630DEB633F28bf222C7C5575",
+    "oneNFT": "0x09019807D1dc3248BE98D8A57502c09963ee5e9C"
+  },
+  {
+    "name": "Mumbai",
+    "chainId": 80001,
+    "rpc": "https://polygon-testnet.public.blastapi.io",
+    "gateway": "0xBF62ef1486468a6bd26Dd669C06db43dEd5B849B",
+    "gasReceiver": "0xbE406F0189A0B4cf3A05C286473D23791Dd44Cc6",
+    "tokenName": "MATIC",
+    "tokenSymbol": "MATIC",
+    "executableSample": "0x9372350Abb3B5c10DB1BB858e0bCf91eFa74d946",
+    "constAddressDeployer": "0x98b2920d53612483f91f12ed7754e51b4a77919e",
+    "crossChainToken": "0x2c852e740B62308c46DD29B982FBb650D063Bd07",
+    "tokens": {
+      "aUSDC": "aUSDC"
+    },
+    "messageSender": "0xE64FF11290b9D4fefe46B914512F76Eee2B0E232",
+    "messageReceiver": "0xC251443810b128264Dc35775267434F7Ae91c0A1",
+    "nftMarketplace": "0xB594Ce6C4d6B2383905A7bCaa1E918919ae3F654",
+    "oneNFT": "0x810fAC051229cc9d77EDE88080A08343529bb2E2"
+  },
+  {
+    "name": "Fantom",
+    "chainId": 4002,
+    "rpc": "https://rpc.ankr.com/fantom_testnet",
+    "gateway": "0x97837985Ec0494E7b9C71f5D3f9250188477ae14",
+    "gasReceiver": "0xbE406F0189A0B4cf3A05C286473D23791Dd44Cc6",
+    "tokenName": "FTM",
+    "tokenSymbol": "FTM",
+    "executableSample": "0x9372350Abb3B5c10DB1BB858e0bCf91eFa74d946",
+    "constAddressDeployer": "0x98b2920d53612483f91f12ed7754e51b4a77919e",
+    "crossChainToken": "0x75Cc4fDf1ee3E781C1A3Ee9151D5c6Ce34Cf5C61",
+    "tokens": {
+      "aUSDC": "aUSDC"
+    },
+    "messageSender": "0x49d616DE7DCfe6bD1804dedBFc2c7de32201a830",
+    "messageReceiver": "0x18C657e646386Bc7776e70b4291975A99CDe3cFB",
+    "nftMarketplace": "0x40633b4c51420B62D5f1a1928Cd77caAd70A3439",
+    "oneNFT": "0x4EbB1BBC7F6fC9e0e2BcdD2137469154a63b2BC7"
   }
 ]

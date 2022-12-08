@@ -1,5 +1,5 @@
 import fs from "fs/promises";
-import {getDefaultProvider} from "ethers";
+import {getDefaultProvider, BigNumber} from "ethers";
 import {isTestnet, wallet} from "../config/constants";
 import {ethers} from "ethers";
 import _ from "lodash";
@@ -17,18 +17,21 @@ const OneNFTContract = require("../artifacts/contracts/OneNft.sol/OneNFT.json");
 let chains = isTestnet ? require("../config/testnet.json") : require("../config/local.json");
 
 // get chains
-// const chainName = ["Moonbeam", "Avalanche", "BscTest", "Mumbai", "Fantom"];
-const chainName = ["BscTest", "Avalanche"];
+const chainName = ["Moonbeam", "Avalanche", "BscTest", "Mumbai", "Fantom"];
+// const chainName = ["BscTest", "Avalanche"];
 
 const nftName = [
+    {name: "moonNFT", symbol: "mNFT"},
+    {name: "avaxNFT", symbol: "aNFT"},
     {name: "bscNFT", symbol: "bNFT"},
-    {name: "avaxNFT", symbol: "aNFT"}
+    {name: "polyNFT", symbol: "pNFT"},
+    {name: "ftmNFT", symbol: "fNFT"},
 ];
 
 const tokenUrl = [
-    "https://api.onenft.shop/metadata/c8fc85bd753c79f3ba0b8e9028c6fb66",
-    "https://api.onenft.shop/metadata/a3e8cd74020705eef14d1920f591348d",
     "https://api.onenft.shop/metadata/037e7c3068fd135337829a585ebde17c",
+    "https://api.onenft.shop/metadata/a3e8cd74020705eef14d1920f591348d",
+    "https://api.onenft.shop/metadata/c8fc85bd753c79f3ba0b8e9028c6fb66",
     "https://api.onenft.shop/metadata/696e7b1aa0fa2369077a9dcefdf1fc08",
     "https://api.onenft.shop/metadata/80029f46fef3ed6d3c6e036d3ce570d8"
 ];
@@ -63,7 +66,7 @@ async function deploy(chain: any, tokenUrl: string, nftName: any) {
     chain.nftMarketplace = marketplace.address;
 
     const oneNFT = await deployContract(connectedWallet, OneNFTContract, [
-        nftName.name, nftName.symbol, receiver.address
+        nftName.name, nftName.symbol
     ],);
 
     console.log(`OneNFTContract deployed on ${
@@ -82,10 +85,19 @@ async function deploy(chain: any, tokenUrl: string, nftName: any) {
     currentTime.setDate(currentTime.getDate()+14);
     const newTime = Math.round(currentTime.getTime() / 1000);
 
-    await(await oneNFT.approve(marketplace.address, 1)).wait(1);
-    console.log(`Approved nft#1 on ${chain.name}`);
+    // await(await oneNFT.approve(marketplace.address, 1)).wait(1);
+    // console.log(`Approved nft#1 on ${chain.name}`);
 
-    await(await marketplace.makeItem(oneNFT.address, 1, ethers.utils.parseUnits('0.1', 6), newTime)).wait(1);
+    const nftId = 1;
+    const contractName = await oneNFT.name();
+    const nftNonce = await oneNFT.nonces(nftId);
+    // set deadline in 1 days
+    const sigExpiry = Math.round(Date.now() / 1000 + (7 * 24 * 60 * 60));
+
+    const signature = await sign(contractName, oneNFT.address, marketplace.address, nftId, chain.chainId, nftNonce, sigExpiry, connectedWallet);
+
+    await(await marketplace.makeItem(oneNFT.address, nftId, ethers.utils.parseUnits('0.1', 6), newTime, sigExpiry, signature)).wait(1);
+
     console.log(`Listed nft in ${
         chain.name
     }`);
@@ -123,5 +135,54 @@ async function main() {
         await fs.writeFile("config/local.json", JSON.stringify(result, null, 2),);
     }
 }
+
+// helper to sign using (spender, tokenId, nonce, deadline) EIP 712
+async function sign(
+    contractName: String,
+    verifyingContract: String,
+    spender: String,
+    tokenId: number,
+    chainId: number,
+    nonce: BigNumber,
+    deadline: number,
+    connectedWallet: any
+  ) {
+
+    const typedData = {
+      types: {
+        Permit: [
+          { name: "spender", type: "address" },
+          { name: "tokenId", type: "uint256" },
+          { name: "nonce", type: "uint256" },
+          { name: "deadline", type: "uint256" },
+        ],
+      },
+      primaryType: "Permit",
+      domain: {
+        name: contractName,
+        version: "1",
+        chainId: chainId,
+        verifyingContract: verifyingContract,
+      },
+      message: {
+        spender,
+        tokenId,
+        nonce,
+        deadline
+      },
+    };
+
+    // sign Permit
+    // assume deployer is the owner
+    const deployer = connectedWallet;
+
+    const signature = await deployer._signTypedData(
+      typedData.domain as any,
+      { Permit: typedData.types.Permit },
+      typedData.message
+    );
+
+    return signature;
+  }
 
 main();

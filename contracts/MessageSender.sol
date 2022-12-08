@@ -30,7 +30,7 @@ contract MessageSender {
         // axelar rugi in this case
 
         // delist action = 0
-        bytes memory payload = abi.encode(msg.sender, address(0x0), 0, tokenId, 0, 0);
+        bytes memory payload = abi.encode(msg.sender, address(0x0), 0, tokenId, 0, 0, 0, "");
 
         if (msg.value > 0) {
             gasReceiver.payNativeGasForContractCall{value: msg.value}(
@@ -55,14 +55,16 @@ contract MessageSender {
         address nftAddress,
         uint256 tokenId,
         uint256 amount,
-        uint256 deadline
+        uint256 listExpiry,
+        uint256 sigExpiry,
+        bytes calldata signature
     ) external payable {
         // make sure gateway and gasReceiver payload is the same
         // axelar will not allow diff payload content as it consume diff gas amount
         // axelar rugi in this case
 
         // list action = 1
-        bytes memory payload = abi.encode(msg.sender, nftAddress, 1, tokenId, amount, deadline);
+        bytes memory payload = abi.encode(msg.sender, nftAddress, 1, tokenId, amount, listExpiry, sigExpiry, signature);
 
         if (msg.value > 0) {
             gasReceiver.payNativeGasForContractCall{value: msg.value}(
