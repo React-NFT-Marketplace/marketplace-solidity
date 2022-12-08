@@ -20,6 +20,7 @@
     "@openzeppelin/contracts": "^4.8.0",
     "@soliditylabs/erc721-permit": "^1.0.0",
     "@types/lodash": "^4.14.188",
+    "axios": "^1.2.1",
     "classnames": "^2.3.1",
     "daisyui": "^2.18.0",
     "dotenv": "^16.0.1",

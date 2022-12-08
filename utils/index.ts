@@ -213,7 +213,7 @@ export async function mintTokenToSourceChain(
       2
     );
 
-    const tokenId = 3;
+    const tokenId = 1;
     // set deadline in 14 days
     const deadline = Math.round(Date.now() / 1000 + (14 * 24 * 60 * 60));
     const ownerAddress = await bscConnectedWallet.getAddress();

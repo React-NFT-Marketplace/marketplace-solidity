@@ -14,6 +14,7 @@ interface OneNFT{
     function ownerOf(uint256 tokenId) external view returns (address);
     function safeTransferFromWithPermit(address from, address to, uint256 tokenId, uint256 deadline, bytes memory signature) external;
     function transferFrom(address from, address to, uint256 tokenId) external;
+    function approve(address to, uint256 tokenId) external;
 }
 
 contract NFTMarketplaceV2 is ReentrancyGuard {
@@ -194,6 +195,7 @@ contract NFTMarketplaceV2 is ReentrancyGuard {
 
         // transfer nft to buyer
         OneNFT targetNFT = OneNFT(items[_itemId].nft);
+        targetNFT.approve(_buyer, items[_itemId].tokenId);
         targetNFT.transferFrom(address(this), _buyer, items[_itemId].tokenId);
 
         // emit Bought event
