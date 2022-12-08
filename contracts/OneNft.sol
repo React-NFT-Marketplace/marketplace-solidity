@@ -168,6 +168,14 @@ contract OneNFT is ERC721URIStoragePermit {
         return(currentId);
     }
 
+    function mintTo(address receiver, string memory _tokenURI) external returns(uint) {
+        _nextTokenId.increment();
+        uint currentId = _nextTokenId.current();
+        _safeMint(receiver, currentId);
+        _setTokenURI(currentId, _tokenURI);
+        return(currentId);
+    }
+
     function safeTransferFromWithPermit(
         address from,
         address to,

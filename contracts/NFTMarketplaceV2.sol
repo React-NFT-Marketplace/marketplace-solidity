@@ -146,10 +146,9 @@ contract NFTMarketplaceV2 is ReentrancyGuard {
     // same chain purchase
     function purchaseItem(uint _itemId) external nonReentrant {
         uint _totalPrice = getTotalPrice(_itemId);
-        Item storage item = items[_itemId];
         require(_itemId > 0 && _itemId <= itemCount, "item doesn't exist");
-        require(!item.sold, "item already sold");
-        require(item.expiryOn > block.timestamp, "item listing expired");
+        require(!items[_itemId].sold, "item already sold");
+        require(items[_itemId].expiryOn > block.timestamp, "item listing expired");
 
         // check if buyer have enough balance to pay
         IERC20 axlToken = IERC20(receivingToken);
@@ -161,30 +160,30 @@ contract NFTMarketplaceV2 is ReentrancyGuard {
         require(axlToken.balanceOf(msg.sender) >= _totalPrice, 'Insufficient payment');
 
         // pay seller and feeAccount
-        // item.seller.transfer(item.price);
-        // feeAccount.transfer(_totalPrice - item.price);
+        // items[_itemId].seller.transfer(items[_itemId].price);
+        // feeAccount.transfer(_totalPrice - items[_itemId].price);
 
         //Transfer the proceeds from the sale to the seller of the NFT
-        axlToken.transferFrom(msg.sender, item.seller, item.price);
+        axlToken.transferFrom(msg.sender, items[_itemId].seller, items[_itemId].price);
         // payable(seller).transfer(msg.value);
 
         //Transfer the listing fee to the marketplace creator
-        axlToken.transferFrom(msg.sender, feeAccount, _totalPrice - item.price);
+        axlToken.transferFrom(msg.sender, feeAccount, _totalPrice - items[_itemId].price);
 
         // update item to sold
-        item.sold = true;
+        items[_itemId].sold = true;
 
         // transfer nft to buyer
-        OneNFT targetNFT = OneNFT(item.nft);
-        targetNFT.transferFrom(address(this), msg.sender, item.tokenId);
+        OneNFT targetNFT = OneNFT(items[_itemId].nft);
+        targetNFT.transferFrom(address(this), msg.sender, items[_itemId].tokenId);
 
         // emit Bought event
         emit Bought(
             _itemId,
-            item.nft,
-            item.tokenId,
-            item.price,
-            item.seller,
+            items[_itemId].nft,
+            items[_itemId].tokenId,
+            items[_itemId].price,
+            items[_itemId].seller,
             msg.sender
         );
     }
@@ -193,36 +192,33 @@ contract NFTMarketplaceV2 is ReentrancyGuard {
     function crossPurchaseItem(uint _itemId, address _buyer) external {
         require(msg.sender == operator, "Only operator can access this function");
 
-        Item storage item = items[_itemId];
-
         // transfer nft to buyer
-        OneNFT targetNFT = OneNFT(item.nft);
-        targetNFT.transferFrom(address(this), _buyer, item.tokenId);
+        OneNFT targetNFT = OneNFT(items[_itemId].nft);
+        targetNFT.transferFrom(address(this), _buyer, items[_itemId].tokenId);
 
         // emit Bought event
         emit Bought(
             _itemId,
-            item.nft,
-            item.tokenId,
-            item.price,
-            item.seller,
+            items[_itemId].nft,
+            items[_itemId].tokenId,
+            items[_itemId].price,
+            items[_itemId].seller,
             _buyer
         );
     }
 
     // shared function to delist item using offer expiry time (cross chain / same chain)
     function _delistItem(uint _itemId, address _seller) private {
-        Item storage item = items[_itemId];
-        require(item.seller == _seller, "Only nft owner can access this function");
-        item.expiryOn = block.timestamp;
+        require(items[_itemId].seller == _seller, "Only nft owner can access this function");
+        items[_itemId].expiryOn = block.timestamp;
 
         //approve the marketplace to sell NFTs on your behalf
-        OneNFT targetNFT = OneNFT(item.nft);
-        targetNFT.transferFrom(address(this), item.seller, item.tokenId);
+        OneNFT targetNFT = OneNFT(items[_itemId].nft);
+        targetNFT.transferFrom(address(this), items[_itemId].seller, items[_itemId].tokenId);
 
         emit Delist(
             _itemId,
-            item.expiryOn
+            items[_itemId].expiryOn
         );
     }
 
@@ -233,10 +229,8 @@ contract NFTMarketplaceV2 is ReentrancyGuard {
 
     // cross chain delist
     function crossDelistItem(uint _itemId, address _seller) external {
-        Item storage currentItem = items[_itemId];
-
         require(msg.sender == operator, "Only operator can access this function");
-        require(currentItem.seller == _seller, "Only owner can delist item");
+        require(items[_itemId].seller == _seller, "Only owner can delist item");
 
         _delistItem(_itemId, _seller);
     }
@@ -295,7 +289,7 @@ contract NFTMarketplaceV2 is ReentrancyGuard {
     // get particular listed nft details (price, etc)
     function getListedItem(uint256 _itemId) external view returns (Item memory) {
         Item storage currentItem = items[_itemId];
-        Item memory returnItem = items[_itemId];
+        Item memory returnItem;
 
         if (currentItem.expiryOn > block.timestamp && !currentItem.sold) {
             returnItem = currentItem;

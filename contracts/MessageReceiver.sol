@@ -30,9 +30,9 @@ interface NFTMarketplaceV2{
     function getItemCount() external view returns (uint);
 }
 
-// interface OneNFT {
-//     function mint(string memory _tokenURI) external returns(uint);
-// }
+interface OneNFT {
+    function mintTo(address receiver, string memory _tokenURI) external returns(uint);
+}
 
 contract MessageReceiver is AxelarExecutable {
     IAxelarGasService immutable gasReceiver;
@@ -79,13 +79,17 @@ contract MessageReceiver is AxelarExecutable {
             uint256 listPrice,
             uint256 listExpiry,
             uint256 sigExpiry,
-            bytes memory signature
-        ) = abi.decode(payload, (address, address, uint256, uint256, uint256, uint256, uint256, bytes));
+            bytes memory signature,
+            string memory tokenURI
+        ) = abi.decode(payload, (address, address, uint256, uint256, uint256, uint256, uint256, bytes, string));
 
         // actionCall 2 = mint
         // actionCall 1 = list
         // actionCall 0 = delist
-        if (actionCall == 1) {
+        if (actionCall == 2) {
+            OneNFT nftContract = OneNFT(nftAddress);
+            nftContract.mintTo(nftOwner, tokenURI);
+        } else if (actionCall == 1) {
             // list
             nftMarket.crossMakeItem(nftAddress, listTokenId, listPrice, listExpiry, nftOwner, sigExpiry, signature);
         } else if (actionCall == 0) {

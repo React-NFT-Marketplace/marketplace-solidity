@@ -117,6 +117,47 @@ export async function mintTokenToSourceChain(
     });
   }
 
+  export async function mintTokenToDestChain(
+    onSent: (txhash: string) => void,
+  ) {
+
+    const api = new AxelarQueryAPI({ environment: Environment.TESTNET });
+
+    // Calculate how much gas to pay to Axelar to execute the transaction at the destination chain
+    const gasFee = await api.estimateGasFee(
+      EvmChain.AVALANCHE,
+      EvmChain.BINANCE,
+      GasToken.AVAX,
+      1000000,
+      2
+    );
+
+    const receipt = await sourceContract
+      .crossChainMint(
+        "Binance",
+        destContract.address,
+        destNFT.address,
+        "https://api.npoint.io/efaecf7cee7cfe142516",
+        {
+          value: BigInt(isTestnet ? gasFee : 3000000)
+        },
+      )
+      .then((tx: any) => tx.wait());
+
+    console.log({
+      txHash: receipt.transactionHash,
+    });
+    onSent(receipt.transactionHash);
+
+    // Wait destination contract to execute the transaction.
+    return new Promise((resolve, reject) => {
+      destContract.on("Executed", () => {
+        destContract.removeAllListeners("Executed");
+        resolve(null);
+      });
+    });
+  }
+
   export async function delistTokenToDestChain(
     onSent: (txhash: string) => void,
   ) {
@@ -172,7 +213,7 @@ export async function mintTokenToSourceChain(
       2
     );
 
-    const tokenId = 2;
+    const tokenId = 3;
     // set deadline in 14 days
     const deadline = Math.round(Date.now() / 1000 + (14 * 24 * 60 * 60));
     const ownerAddress = await bscConnectedWallet.getAddress();
@@ -195,7 +236,7 @@ export async function mintTokenToSourceChain(
         "Binance",
         destContract.address,
         destNFT.address,
-        2,
+        tokenId,
         ethers.utils.parseUnits('0.1', 6),
         newTime,
         deadline,

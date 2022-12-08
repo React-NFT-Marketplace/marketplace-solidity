@@ -7,6 +7,7 @@ import {
   listTokenToDestChain,
   delistTokenToDestChain,
   mintTokenToSourceChain,
+  mintTokenToDestChain,
   getBalance,
   generateRecipientAddress,
   truncatedAddress,
@@ -38,7 +39,7 @@ const Home: NextPage = () => {
 
   async function mintNft() {
     setLoading(true);
-    await mintTokenToSourceChain(setTxhash).finally(
+    await mintTokenToDestChain(setTxhash).finally(
       () => {
         setLoading(false);
       },
