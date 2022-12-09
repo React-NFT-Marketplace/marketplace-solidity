@@ -108,7 +108,7 @@ async function deploy(chain: any, metadataUrl: string[], nftName: any) {
     let nftCount = 0;
     for (let tUrl in metadataUrl) {
         console.log(metadataUrl[tUrl]);
-        await(await oneNFT.mint(tUrl)).wait(1);
+        await(await oneNFT.mint(metadataUrl[tUrl])).wait(1);
         nftCount++;
     }
 
