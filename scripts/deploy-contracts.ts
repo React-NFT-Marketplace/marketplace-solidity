@@ -67,7 +67,7 @@ const tokenUrl: any = {
 
 const chainInfo: any = [];
 
-async function deploy(chain: any, tokenUrl: string[], nftName: any) {
+async function deploy(chain: any, metadataUrl: string[], nftName: any) {
     const provider = getDefaultProvider(chain.rpc);
     const connectedWallet = wallet.connect(provider);
 
@@ -101,12 +101,13 @@ async function deploy(chain: any, tokenUrl: string[], nftName: any) {
 
     console.log(`OneNFTContract deployed on ${
         chain.name
-    }:`, oneNFT.address,);
+    }:`, oneNFT.address);
     chain.oneNFT = oneNFT.address;
 
     // create token 1
     let nftCount = 0;
-    for (let tUrl in tokenUrl) {
+    for (let tUrl in metadataUrl) {
+        console.log(metadataUrl[tUrl]);
         await(await oneNFT.mint(tUrl)).wait(1);
         nftCount++;
     }

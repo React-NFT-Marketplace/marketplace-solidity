@@ -136,7 +136,6 @@ abstract contract ERC721URIStoragePermit is ERC721Permit {
 contract OneNFT is ERC721URIStoragePermit {
     using Counters for Counters.Counter;
     address owner;
-    // address operator;
 
     // Optional mapping for token URIs
     mapping(uint256 => string) private _tokenURIs;
@@ -159,6 +158,30 @@ contract OneNFT is ERC721URIStoragePermit {
     //     require(owner == msg.sender, "Only owner can update operator");
     //     operator = _operator;
     // }
+
+    function GetHolderNfts(address holder) public view returns (uint[] memory) {
+        uint256 total = _nextTokenId.current();
+
+        uint[] memory tokenIds = new uint[](total);
+
+        for (uint256 i; i < total; i++) {
+            if (ownerOf(i+1) == holder) {
+                tokenIds[i] = i+1;
+            }
+        }
+        return tokenIds;
+    }
+
+    function GetAllNftOwnerAddress() public view returns (address[] memory) {
+        uint256 total = _nextTokenId.current();
+
+        address[] memory ownerAddresses = new address[](total);
+
+        for (uint256 i; i < total; i++) {
+            ownerAddresses[i] = ownerOf(i+1);
+        }
+        return ownerAddresses;
+    }
 
     function mint(string memory _tokenURI) external returns(uint) {
         _nextTokenId.increment();

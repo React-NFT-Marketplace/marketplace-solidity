@@ -13,10 +13,10 @@
     "tokens": {
       "aUSDC": "aUSDC"
     },
-    "messageSender": "0xd7835B7293B2cd961f731c826A9fC373702b9214",
-    "messageReceiver": "0x7D0C58f60c5463622529d65398Da53De206E1B5E",
-    "nftMarketplace": "0x4002e80a26fbD42d689bE211eC7660Ef6B408d25",
-    "oneNFT": "0x9B99E3731958F5c90Ad79A5b0540707F48955e3f"
+    "messageSender": "0x3656bf118171973eBe0ba4883364144034faC2D3",
+    "messageReceiver": "0xb52c11b54B6a8Cc4A1C00c395A120810CBFc9f1B",
+    "nftMarketplace": "0x60885135e8f4D94185F96D46840D4De3815e2e81",
+    "oneNFT": "0x478ccD18C160281894327508F1E460A5eCfEef8b"
   },
   {
     "name": "Avalanche",
@@ -32,10 +32,10 @@
     "tokens": {
       "aUSDC": "aUSDC"
     },
-    "messageSender": "0x588cEEefc28Fb8BB2538327140029b7622c92ef2",
-    "messageReceiver": "0x94C112309898651C905cb94684431724012b4bF9",
-    "nftMarketplace": "0xd33F1FAD44CB692f182F05b4Df0D34d242289ad4",
-    "oneNFT": "0xEE86f5288369286E27667A2B0D3A72c978fbEf33"
+    "messageSender": "0x830Dda2B618FdB3C1155df2DB39fd07F9F8B6B96",
+    "messageReceiver": "0x148E27D8CfBB176da3Ca19bdd57B20920D687bB7",
+    "nftMarketplace": "0xC5411e4a24ef81bE450A588f7C0259f12fdb4641",
+    "oneNFT": "0xBf7aB580F90B852AC2072A62993C6Fd5f1060594"
   },
   {
     "name": "BscTest",
@@ -51,10 +51,10 @@
     "tokens": {
       "aUSDC": "aUSDC"
     },
-    "messageSender": "0x417b2CddBe4b1DEFa1890379013478De69e01BF8",
-    "messageReceiver": "0xE1008caB93DF9c6363F0A7fE5dEe2b19cd8639bB",
-    "nftMarketplace": "0xE248f962B754E8d645a963Fc4577279466990Ab2",
-    "oneNFT": "0xbE90e0B447DaaF661fc8C18423a33796D4e9B22e"
+    "messageSender": "0x5534A47bd20Bf34aadAd025786aC76600a2157F3",
+    "messageReceiver": "0xc8fE6Bc075F9d32AD684D28AA1CD200b6a709150",
+    "nftMarketplace": "0xa1dDfE480F1634A628B8b8aAFBa62211A24BecA1",
+    "oneNFT": "0xa23282628e4914162E0Ad817454E38eF23649Cf2"
   },
   {
     "name": "Mumbai",
@@ -70,10 +70,10 @@
     "tokens": {
       "aUSDC": "aUSDC"
     },
-    "messageSender": "0x86686eD11ccf0bF3028d60fA96F65E17388bebeb",
-    "messageReceiver": "0xd8784A3D7D8E727629Ca991A14024de8488dcE94",
-    "nftMarketplace": "0xb7A7903ae0e63A9962f7C3F0690F942aa44186eb",
-    "oneNFT": "0xfB61B7E690D41f396e780d4100A177714a87d8a2"
+    "messageSender": "0xF052C330b43Fc1ab99eF2883C5d929c763b86F65",
+    "messageReceiver": "0x0C35242A71fE7CEA968b921025C4cc3368081b58",
+    "nftMarketplace": "0x9b4732D3A6a8B2F6cf003893d66Ec94562b2EF59",
+    "oneNFT": "0x657f216e4d8E314B6658aa3059aE42db3bE6f40A"
   },
   {
     "name": "Fantom",
@@ -89,9 +89,9 @@
     "tokens": {
       "aUSDC": "aUSDC"
     },
-    "messageSender": "0x1d24F83b0Bfe97E4671c7c607aB8d6A525C7E6eB",
-    "messageReceiver": "0xC32f4a4d20fA6e745337E025bD70Cb401DafE09F",
-    "nftMarketplace": "0x21Bb07a174b6e008356419a4fdb21E72C0788421",
-    "oneNFT": "0x8569B4615023907D75197DBD4C71602FdFA0217a"
+    "messageSender": "0xE73e21FBd9Be46FC42eD8084d572F8Cce85ACa7D",
+    "messageReceiver": "0x3fF059a424748eF872C1a79b827065E73c28b56B",
+    "nftMarketplace": "0xBB53016f9811c8A9A42f145E4d9f1f412915ddb7",
+    "oneNFT": "0x21898880d8C7Fa18d127Dc25B5f4a59F57fFDd4E"
   }
 ]
