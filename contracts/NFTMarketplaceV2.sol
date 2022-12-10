@@ -198,6 +198,9 @@ contract NFTMarketplaceV2 is ReentrancyGuard {
         targetNFT.approve(_buyer, items[_itemId].tokenId);
         targetNFT.transferFrom(address(this), _buyer, items[_itemId].tokenId);
 
+        // update item to sold
+        items[_itemId].sold = true;
+
         // emit Bought event
         emit Bought(
             _itemId,
